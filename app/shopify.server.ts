@@ -9,12 +9,20 @@ import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prism
 import prisma from "./db.server";
 import { upsertShopFromSession } from "./domain/shop/shop.server";
 
+// Fallback vers une URL VALIDE si la variable est absente : `new URL("")` lève
+// une exception qui ferait planter le module entier au cold start Vercel
+// (FUNCTION_INVOCATION_FAILED sur toutes les routes). En production réelle,
+// SHOPIFY_APP_URL DOIT être renseignée — ce fallback ne sert qu'à éviter le crash.
+const appUrl =
+  process.env.SHOPIFY_APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://localhost");
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.January25,
   scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
+  appUrl,
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,

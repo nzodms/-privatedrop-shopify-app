@@ -9,6 +9,9 @@ node_modules
 .shopify
 .cache
 
+# Vercel
+.vercel
+
 # Prisma local artifacts
 *.db
 *.db-journal

@@ -12,7 +12,7 @@ client_id = ""
 
 name = "PrivateDrop"
 handle = "privatedrop"
-application_url = "https://localhost:3000"
+application_url = "https://privatedrop-shopify-app.vercel.app"
 embedded = true
 
 [build]
@@ -30,9 +30,9 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://localhost:3000/auth/callback",
-  "https://localhost:3000/auth/shopify/callback",
-  "https://localhost:3000/api/auth/callback"
+  "https://privatedrop-shopify-app.vercel.app/auth/callback",
+  "https://privatedrop-shopify-app.vercel.app/auth/shopify/callback",
+  "https://privatedrop-shopify-app.vercel.app/api/auth/callback"
 ]
 
 [webhooks]
@@ -65,7 +65,7 @@ api_version = "2025-01"
 # Expose nos routes serveur sous le domaine de la boutique :
 #   https://<boutique>/apps/privatedrop/...  ->  <app>/proxy/...
 [app_proxy]
-url = "https://localhost:3000/proxy"
+url = "https://privatedrop-shopify-app.vercel.app/proxy"
 prefix = "apps"
 subpath = "privatedrop"
 

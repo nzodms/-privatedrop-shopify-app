@@ -5,11 +5,18 @@
 
 generator client {
   provider = "prisma-client-js"
+  // native  : pour le dev local.
+  // rhel-openssl-3.0.x : runtime serverless Vercel (Amazon Linux 2023, OpenSSL 3).
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
+  // URL d'exécution (Neon : connexion *poolée* `-pooler`, recommandée en serverless).
   url      = env("DATABASE_URL")
+  // URL directe (Neon : connexion *non poolée*) utilisée par `prisma migrate`.
+  // Si tu n'utilises qu'une seule URL, mets la même valeur que DATABASE_URL.
+  directUrl = env("DIRECT_URL")
 }
 
 // ── Sessions Shopify ────────────────────────────────────────────────────────

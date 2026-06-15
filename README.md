@@ -9,6 +9,9 @@ Ce dépôt est au **Milestone 1 — Fondation** : OAuth, sessions, base de donn�
 webhooks RGPD, splash screen premium et tableau de bord vide fonctionnel dans
 l'admin Shopify, plus la base de l'App Proxy.
 
+> 🚀 **Déploiement sans Docker ni local** (GitHub → Vercel → Neon → Shopify) :
+> voir **[VERCEL.md](./VERCEL.md)**. Route de santé : `/health` → `{ ok: true }`.
+
 ---
 
 ## 1. Prérequis

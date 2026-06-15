@@ -2,6 +2,11 @@ import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
+import { vercelPreset } from "@vercel/remix/vite";
+
+// N'active le preset Vercel qu'en build Vercel (laisse `shopify app dev` et le
+// build local intacts).
+const isVercel = !!process.env.VERCEL;
 
 declare module "@remix-run/node" {
   interface Future {
@@ -45,6 +50,7 @@ export default defineConfig({
   plugins: [
     remix({
       ignoredRouteFiles: ["**/.*"],
+      ...(isVercel ? { presets: [vercelPreset()] } : {}),
       future: {
         v3_fetcherPersist: true,
         v3_relativeSplatPath: true,
