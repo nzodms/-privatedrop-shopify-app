@@ -1,0 +1,20 @@
+# Postgres local pour le développement de PrivateDrop.
+# Démarrer :  docker compose up -d
+# DATABASE_URL correspondant :
+#   postgresql://privatedrop:privatedrop@localhost:5432/privatedrop?schema=public
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: privatedrop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: privatedrop
+      POSTGRES_PASSWORD: privatedrop
+      POSTGRES_DB: privatedrop
+    ports:
+      - "5432:5432"
+    volumes:
+      - privatedrop_pgdata:/var/lib/postgresql/data
+
+volumes:
+  privatedrop_pgdata:

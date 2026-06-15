@@ -1,0 +1,73 @@
+# PrivateDrop — Shopify app configuration
+#
+# Ce fichier décrit l'app pour le Shopify CLI et le Partner Dashboard.
+# `client_id` et `application_url` sont (re)générés/écrasés automatiquement par :
+#   npm run config:link      (shopify app config link)
+#   npm run dev              (shopify app dev — met à jour application_url avec le tunnel)
+#
+# Ne PAS committer un client_id réel d'une app de production.
+
+# Renseigné automatiquement par `shopify app config link`.
+client_id = ""
+
+name = "PrivateDrop"
+handle = "privatedrop"
+application_url = "https://localhost:3000"
+embedded = true
+
+[build]
+# Inclut le store de dev dans les URLs OAuth générées localement.
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[access_scopes]
+# Scopes V1 minimaux — lecture seule.
+# read_products  : sélection produits + snapshots (titre/image/prix/stock).
+# read_customers : règles d'accès VIP (email client, tag, ancien client via numberOfOrders).
+scopes = "read_products,read_customers"
+# Flux d'installation moderne (managed install / token exchange). Pas de token copié/collé.
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://localhost:3000/auth/callback",
+  "https://localhost:3000/auth/shopify/callback",
+  "https://localhost:3000/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2025-01"
+
+  # Désinstallation : marque le shop désinstallé + purge des données.
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  # Mise à jour des scopes accordés.
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  # Webhooks RGPD obligatoires (compliance).
+  [[webhooks.subscriptions]]
+  topics = [ "customers/data_request" ]
+  uri = "/webhooks/customers/data_request"
+
+  [[webhooks.subscriptions]]
+  topics = [ "customers/redact" ]
+  uri = "/webhooks/customers/redact"
+
+  [[webhooks.subscriptions]]
+  topics = [ "shop/redact" ]
+  uri = "/webhooks/shop/redact"
+
+# App Proxy — base posée en M1. La page événement complète arrive en M5.
+# Expose nos routes serveur sous le domaine de la boutique :
+#   https://<boutique>/apps/privatedrop/...  ->  <app>/proxy/...
+[app_proxy]
+url = "https://localhost:3000/proxy"
+prefix = "apps"
+subpath = "privatedrop"
+
+[pos]
+embedded = false

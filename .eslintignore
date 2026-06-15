@@ -1,0 +1,7 @@
+node_modules
+build
+public/build
+.cache
+.shopify
+prisma/migrations
+*.config.js

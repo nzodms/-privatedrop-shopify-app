@@ -1,0 +1,25 @@
+node_modules
+/build
+/public/build
+.env
+.env.*
+!.env.example
+
+# Shopify CLI
+.shopify
+.cache
+
+# Prisma local artifacts
+*.db
+*.db-journal
+prisma/dev.sqlite*
+
+# Editor / OS
+.DS_Store
+*.log
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Generated GraphQL types
+/app/types/admin.*.d.ts

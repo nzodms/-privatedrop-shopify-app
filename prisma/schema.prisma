@@ -1,0 +1,170 @@
+// PrivateDrop — Prisma schema
+// Base PostgreSQL, multi-tenant par boutique Shopify.
+// Le schéma complet (M1→M8) est posé dès maintenant pour garder une seule
+// migration de fondation propre ; le comportement est ajouté milestone par milestone.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Sessions Shopify ────────────────────────────────────────────────────────
+// Géré par @shopify/shopify-app-session-storage-prisma. Le token y est stocké
+// côté serveur uniquement, jamais exposé au frontend.
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+
+  @@index([shop])
+}
+
+// ── Boutique (tenant) ───────────────────────────────────────────────────────
+model Shop {
+  id            String           @id @default(cuid())
+  shopDomain    String           @unique
+  shopName      String?
+  email         String?
+  plan          String           @default("free")
+  installedAt   DateTime         @default(now())
+  uninstalledAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  events     Event[]
+  onboarding OnboardingState?
+
+  @@index([shopDomain])
+}
+
+// ── Énumérations événement ──────────────────────────────────────────────────
+enum EventType {
+  private_sale
+  timed_drop
+  showroom
+}
+
+enum EventStatus {
+  draft
+  scheduled
+  live
+  ended
+  archived
+}
+
+enum AccessType {
+  public
+  code
+  email_customer
+  past_customer
+  customer_tag
+}
+
+// ── Événement ───────────────────────────────────────────────────────────────
+model Event {
+  id                  String      @id @default(cuid())
+  shopId              String
+  shop                Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  title               String
+  slug                String
+  type                EventType
+  status              EventStatus @default(draft)
+  description         String?
+  heroImage           String?
+  startsAt            DateTime?
+  endsAt              DateTime?
+  accessType          AccessType  @default(public)
+  accessCodeHash      String? // jamais en clair
+  requiredCustomerTag String?
+  designSettings      Json        @default("{}")
+  publishedAt         DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  products       EventProduct[]
+  metrics        EventMetric[]
+  accessAttempts AccessAttempt[]
+
+  @@unique([shopId, slug])
+  @@index([shopId, status])
+}
+
+// ── Produit d'un événement (snapshot minimal) ───────────────────────────────
+model EventProduct {
+  id               String    @id @default(cuid())
+  eventId          String
+  event            Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  shopifyProductId String
+  shopifyVariantId String?
+  titleSnapshot    String
+  imageSnapshot    String?
+  priceSnapshot    String?
+  position         Int       @default(0)
+  revealAt         DateTime?
+  isFeatured       Boolean   @default(false)
+  customLabel      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([eventId, position])
+}
+
+// ── Tentatives d'accès (RGPD : email hashé, stockage minimal) ───────────────
+model AccessAttempt {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  emailHash String?
+  result    String // "granted" | "refused"
+  reason    String?
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([eventId, createdAt])
+}
+
+// ── Métriques analytics (génériques, extensibles sans migration) ────────────
+model EventMetric {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  type      String // page_view | access_granted | product_click | ...
+  productId String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventId, type, createdAt])
+}
+
+// ── État d'onboarding (Smart Start) ─────────────────────────────────────────
+model OnboardingState {
+  id                        String    @id @default(cuid())
+  shopId                    String    @unique
+  shop                      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  status                    String    @default("pending") // pending | scanning | ready | done
+  productsScanned           Int       @default(0)
+  customersScanned          Int       @default(0)
+  eligibleCustomersEstimate Int       @default(0)
+  detectedTags              Json      @default("[]")
+  collectionsCount          Int       @default(0)
+  completedAt               DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+}
