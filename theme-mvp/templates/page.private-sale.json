@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "pd-private-sale",
+      "blocks": {
+        "product_1": { "type": "product", "settings": {} },
+        "product_2": { "type": "product", "settings": {} },
+        "product_3": { "type": "product", "settings": {} }
+      },
+      "block_order": ["product_1", "product_2", "product_3"],
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

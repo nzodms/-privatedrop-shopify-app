@@ -1,0 +1,456 @@
+{%- comment -%}
+  PrivateDrop — MVP Vente privée / Droplist
+  Section autonome et "safe" : tout le CSS est scopé à #pd-ps-{{ section.id }},
+  rien ne fuit vers le reste du thème. Aucun paiement, aucune API, aucune app.
+
+  Accès par code : vérification côté navigateur uniquement (MVP de test).
+  -> Ce n'est PAS une vraie sécurité : le code est visible dans le code source.
+     Parfait pour valider le concept, à remplacer par une vraie app plus tard.
+
+  Compte à rebours / états : calculés côté navigateur à partir des dates réglées
+  dans le customizer (avant ouverture / pendant / après fermeture).
+{%- endcomment -%}
+
+{%- liquid
+  assign ps = section.settings
+  assign accent = ps.accent_color
+  assign bg = ps.bg_color
+  assign text = ps.text_color
+  assign card = ps.card_color
+  assign radius = ps.radius
+-%}
+
+{% style %}
+  #pd-ps-{{ section.id }} {
+    --pd-bg: {{ bg }};
+    --pd-text: {{ text }};
+    --pd-accent: {{ accent }};
+    --pd-card: {{ card }};
+    --pd-muted: {{ text }}99;
+    --pd-line: {{ text }}1a;
+    --pd-radius: {{ radius }}px;
+    background: var(--pd-bg);
+    color: var(--pd-text);
+    font-family: {{ ps.font_family }};
+    -webkit-font-smoothing: antialiased;
+    padding: {{ ps.padding_top }}px 20px {{ ps.padding_bottom }}px;
+  }
+  #pd-ps-{{ section.id }} * { box-sizing: border-box; }
+  #pd-ps-{{ section.id }} .pd-wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* Hero */
+  #pd-ps-{{ section.id }} .pd-hero { text-align: center; }
+  #pd-ps-{{ section.id }} .pd-eyebrow {
+    display: inline-block; letter-spacing: .18em; text-transform: uppercase;
+    font-size: 12px; font-weight: 600; color: var(--pd-accent);
+    padding: 7px 14px; border: 1px solid var(--pd-line); border-radius: 999px;
+    margin-bottom: 22px; background: var(--pd-card);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  #pd-ps-{{ section.id }} .pd-title {
+    font-size: clamp(34px, 6vw, 64px); line-height: 1.04; font-weight: 600;
+    letter-spacing: -0.03em; margin: 0 0 18px;
+  }
+  #pd-ps-{{ section.id }} .pd-subtitle {
+    font-size: clamp(16px, 2.2vw, 21px); line-height: 1.55; color: var(--pd-muted);
+    max-width: 620px; margin: 0 auto 30px;
+  }
+  #pd-ps-{{ section.id }} .pd-hero-img {
+    width: 100%; max-height: 460px; object-fit: cover;
+    border-radius: var(--pd-radius); margin: 8px 0 34px;
+    box-shadow: 0 20px 60px {{ text }}14;
+  }
+
+  /* Compte à rebours */
+  #pd-ps-{{ section.id }} .pd-timer {
+    display: flex; gap: 14px; justify-content: center; margin: 6px 0 8px; flex-wrap: wrap;
+  }
+  #pd-ps-{{ section.id }} .pd-timer-unit {
+    min-width: 78px; padding: 16px 10px; background: var(--pd-card);
+    border: 1px solid var(--pd-line); border-radius: var(--pd-radius);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  #pd-ps-{{ section.id }} .pd-timer-num {
+    font-size: clamp(26px, 4vw, 38px); font-weight: 600; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  #pd-ps-{{ section.id }} .pd-timer-label {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--pd-muted); margin-top: 8px;
+  }
+  #pd-ps-{{ section.id }} .pd-state-msg {
+    text-align: center; font-size: 16px; color: var(--pd-muted);
+    margin: 22px auto 0; max-width: 560px; line-height: 1.5;
+  }
+
+  /* Carte d'accès (code) */
+  #pd-ps-{{ section.id }} .pd-gate {
+    max-width: 440px; margin: 36px auto 0; text-align: center;
+    background: var(--pd-card); border: 1px solid var(--pd-line);
+    border-radius: var(--pd-radius); padding: 30px 26px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 12px 40px {{ text }}12;
+  }
+  #pd-ps-{{ section.id }} .pd-gate h3 { margin: 0 0 6px; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  #pd-ps-{{ section.id }} .pd-gate p { margin: 0 0 18px; font-size: 14px; color: var(--pd-muted); }
+  #pd-ps-{{ section.id }} .pd-gate-row { display: flex; gap: 10px; }
+  #pd-ps-{{ section.id }} .pd-input {
+    flex: 1; height: 48px; padding: 0 16px; font-size: 15px; color: var(--pd-text);
+    background: var(--pd-bg); border: 1px solid var(--pd-line);
+    border-radius: calc(var(--pd-radius) * 0.7); outline: none; transition: border-color .15s ease;
+  }
+  #pd-ps-{{ section.id }} .pd-input:focus { border-color: var(--pd-accent); }
+  #pd-ps-{{ section.id }} .pd-error { color: #c0392b; font-size: 13px; margin-top: 12px; min-height: 16px; }
+
+  /* Boutons */
+  #pd-ps-{{ section.id }} .pd-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 48px; padding: 0 22px; font-size: 15px; font-weight: 500; cursor: pointer;
+    border-radius: calc(var(--pd-radius) * 0.7); border: 1px solid var(--pd-accent);
+    background: var(--pd-accent); color: {{ ps.button_text_color }};
+    text-decoration: none; transition: transform .15s ease, opacity .15s ease; white-space: nowrap;
+  }
+  #pd-ps-{{ section.id }} .pd-btn:hover { opacity: .9; transform: translateY(-1px); }
+  #pd-ps-{{ section.id }} .pd-btn--ghost {
+    background: transparent; color: var(--pd-text); border-color: var(--pd-line);
+  }
+  #pd-ps-{{ section.id }} .pd-btn--full { width: 100%; }
+
+  /* Grille produits */
+  #pd-ps-{{ section.id }} .pd-reserved {
+    margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--pd-line);
+  }
+  #pd-ps-{{ section.id }} .pd-reserved-head { text-align: center; margin-bottom: 34px; }
+  #pd-ps-{{ section.id }} .pd-reserved-head h2 {
+    font-size: clamp(24px, 3.4vw, 34px); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 8px;
+  }
+  #pd-ps-{{ section.id }} .pd-reserved-head p { color: var(--pd-muted); margin: 0; }
+  #pd-ps-{{ section.id }} .pd-grid {
+    display: grid; gap: 22px;
+    grid-template-columns: repeat({{ ps.columns }}, 1fr);
+  }
+  #pd-ps-{{ section.id }} .pd-card {
+    background: var(--pd-card); border: 1px solid var(--pd-line);
+    border-radius: var(--pd-radius); overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  #pd-ps-{{ section.id }} .pd-card:hover { transform: translateY(-3px); box-shadow: 0 18px 50px {{ text }}16; }
+  #pd-ps-{{ section.id }} .pd-card-media { position: relative; aspect-ratio: 1 / 1; background: {{ text }}08; }
+  #pd-ps-{{ section.id }} .pd-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #pd-ps-{{ section.id }} .pd-badge {
+    position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; padding: 6px 11px; border-radius: 999px;
+    background: var(--pd-accent); color: {{ ps.button_text_color }};
+  }
+  #pd-ps-{{ section.id }} .pd-card-body { padding: 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  #pd-ps-{{ section.id }} .pd-card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  #pd-ps-{{ section.id }} .pd-card-price { font-size: 15px; color: var(--pd-muted); }
+  #pd-ps-{{ section.id }} .pd-card-note { font-size: 13px; color: var(--pd-muted); }
+  #pd-ps-{{ section.id }} .pd-card-actions { margin-top: auto; padding-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+  #pd-ps-{{ section.id }} .pd-card-actions > * { flex: 1; }
+  #pd-ps-{{ section.id }} form.pd-atc { margin: 0; }
+
+  #pd-ps-{{ section.id }} .pd-hidden { display: none !important; }
+
+  @media (max-width: 900px) {
+    #pd-ps-{{ section.id }} .pd-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    #pd-ps-{{ section.id }} .pd-grid { grid-template-columns: 1fr; }
+    #pd-ps-{{ section.id }} .pd-gate-row { flex-direction: column; }
+    #pd-ps-{{ section.id }} .pd-card-actions { flex-direction: column; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #pd-ps-{{ section.id }} * { transition: none !important; }
+  }
+{% endstyle %}
+
+<section
+  id="pd-ps-{{ section.id }}"
+  class="pd-ps"
+  data-starts="{{ ps.starts_at | escape }}"
+  data-ends="{{ ps.ends_at | escape }}"
+  data-gate="{% if ps.enable_code and ps.access_code != blank %}1{% else %}0{% endif %}"
+  data-code="{{ ps.access_code | downcase | strip | escape }}"
+  data-hide-after="{% if ps.hide_products_after %}1{% else %}0{% endif %}"
+>
+  <div class="pd-wrap">
+
+    {%- comment -%} ===== HERO ===== {%- endcomment -%}
+    <div class="pd-hero">
+      {%- if ps.eyebrow != blank -%}
+        <span class="pd-eyebrow">{{ ps.eyebrow }}</span>
+      {%- endif -%}
+      <h1 class="pd-title">{{ ps.title }}</h1>
+      {%- if ps.subtitle != blank -%}
+        <p class="pd-subtitle">{{ ps.subtitle }}</p>
+      {%- endif -%}
+
+      {%- if ps.hero_image != blank -%}
+        <img class="pd-hero-img" src="{{ ps.hero_image | image_url: width: 1600 }}"
+             alt="{{ ps.title | escape }}" loading="eager" width="1600">
+      {%- endif -%}
+
+      {%- comment -%} ===== TIMER + MESSAGE D'ÉTAT ===== {%- endcomment -%}
+      {%- if ps.show_timer -%}
+        <div class="pd-timer" data-pd-timer aria-live="polite">
+          <div class="pd-timer-unit"><div class="pd-timer-num" data-d>00</div><div class="pd-timer-label">{{ ps.label_days }}</div></div>
+          <div class="pd-timer-unit"><div class="pd-timer-num" data-h>00</div><div class="pd-timer-label">{{ ps.label_hours }}</div></div>
+          <div class="pd-timer-unit"><div class="pd-timer-num" data-m>00</div><div class="pd-timer-label">{{ ps.label_minutes }}</div></div>
+          <div class="pd-timer-unit"><div class="pd-timer-num" data-s>00</div><div class="pd-timer-label">{{ ps.label_seconds }}</div></div>
+        </div>
+      {%- endif -%}
+      <p class="pd-state-msg" data-pd-state-msg></p>
+    </div>
+
+    {%- comment -%} ===== ACCÈS PAR CODE ===== {%- endcomment -%}
+    {%- if ps.enable_code and ps.access_code != blank -%}
+      <div class="pd-gate" data-pd-gate>
+        <h3>{{ ps.gate_title }}</h3>
+        <p>{{ ps.gate_subtitle }}</p>
+        <div class="pd-gate-row">
+          <input class="pd-input" type="text" inputmode="text" autocomplete="off"
+                 placeholder="{{ ps.gate_placeholder | escape }}" data-pd-code-input>
+          <button class="pd-btn" type="button" data-pd-code-submit>{{ ps.gate_button }}</button>
+        </div>
+        <div class="pd-error" data-pd-code-error></div>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} ===== CONTENU RÉSERVÉ (produits) ===== {%- endcomment -%}
+    <div class="pd-reserved {% if ps.enable_code and ps.access_code != blank %}pd-hidden{% endif %}" data-pd-reserved>
+      <div class="pd-reserved-head">
+        {%- if ps.reserved_title != blank -%}<h2>{{ ps.reserved_title }}</h2>{%- endif -%}
+        {%- if ps.reserved_subtitle != blank -%}<p>{{ ps.reserved_subtitle }}</p>{%- endif -%}
+      </div>
+
+      <div class="pd-grid">
+        {%- for block in section.blocks -%}
+          {%- assign product = block.settings.product -%}
+          {%- if product != blank -%}
+            <article class="pd-card" {{ block.shopify_attributes }}>
+              <div class="pd-card-media">
+                {%- if block.settings.custom_label != blank -%}
+                  <span class="pd-badge">{{ block.settings.custom_label }}</span>
+                {%- endif -%}
+                {%- if product.featured_image -%}
+                  <img src="{{ product.featured_image | image_url: width: 800 }}"
+                       alt="{{ product.title | escape }}" loading="lazy" width="800">
+                {%- endif -%}
+              </div>
+              <div class="pd-card-body">
+                <h3 class="pd-card-title">{{ product.title }}</h3>
+                {%- if ps.show_price -%}
+                  <div class="pd-card-price">{{ product.price | money }}</div>
+                {%- endif -%}
+                {%- if block.settings.note != blank -%}
+                  <div class="pd-card-note">{{ block.settings.note }}</div>
+                {%- endif -%}
+                <div class="pd-card-actions">
+                  <a class="pd-btn pd-btn--ghost" href="{{ product.url }}">{{ ps.label_view }}</a>
+                  {%- if ps.enable_add_to_cart and product.available -%}
+                    <form class="pd-atc" action="{{ routes.cart_add_url }}" method="post">
+                      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                      <input type="hidden" name="quantity" value="1">
+                      <button type="submit" class="pd-btn pd-btn--full">{{ ps.label_add }}</button>
+                    </form>
+                  {%- endif -%}
+                </div>
+              </div>
+            </article>
+          {%- endif -%}
+        {%- else -%}
+          <p class="pd-state-msg">{{ 'Ajoutez des produits depuis le customizer (bloc « Produit »).' }}</p>
+        {%- endfor -%}
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      var root = document.getElementById("pd-ps-{{ section.id }}");
+      if (!root) return;
+
+      var startsRaw = root.dataset.starts;
+      var endsRaw = root.dataset.ends;
+      var starts = startsRaw ? new Date(startsRaw).getTime() : NaN;
+      var ends = endsRaw ? new Date(endsRaw).getTime() : NaN;
+      var hideAfter = root.dataset.hideAfter === "1";
+
+      var msgEl = root.querySelector("[data-pd-state-msg]");
+      var timerEl = root.querySelector("[data-pd-timer]");
+      var reserved = root.querySelector("[data-pd-reserved]");
+
+      var MSG = {
+        before: {{ ps.message_before | json }},
+        during: {{ ps.message_during | json }},
+        after: {{ ps.message_after | json }}
+      };
+
+      function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+      function renderTimer(diff) {
+        if (!timerEl) return;
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        var q = function (sel) { return timerEl.querySelector(sel); };
+        if (q("[data-d]")) q("[data-d]").textContent = pad(d);
+        if (q("[data-h]")) q("[data-h]").textContent = pad(h);
+        if (q("[data-m]")) q("[data-m]").textContent = pad(m);
+        if (q("[data-s]")) q("[data-s]").textContent = pad(s);
+      }
+
+      // État : avant / pendant / après (tout est calculé ici).
+      function phase() {
+        var now = Date.now();
+        if (!isNaN(starts) && now < starts) return "before";
+        if (!isNaN(ends) && now >= ends) return "after";
+        return "during";
+      }
+
+      function apply() {
+        var p = phase();
+        if (msgEl) msgEl.textContent = MSG[p] || "";
+
+        if (p === "before" && timerEl) {
+          renderTimer(Math.max(0, starts - Date.now()));
+          timerEl.classList.remove("pd-hidden");
+        } else if (p === "during" && timerEl && !isNaN(ends)) {
+          renderTimer(Math.max(0, ends - Date.now()));
+          timerEl.classList.remove("pd-hidden");
+        } else if (timerEl) {
+          timerEl.classList.add("pd-hidden");
+        }
+
+        // Produits : visibles pendant ; masqués après si l'option est cochée ;
+        // masqués avant ouverture (teasing). Le gate de code reste prioritaire.
+        if (reserved && !gateLocked()) {
+          var showProducts = (p === "during") || (p === "after" && !hideAfter);
+          reserved.classList.toggle("pd-hidden", !showProducts);
+        }
+      }
+
+      /* ---- Accès par code (MVP, client-side) ---- */
+      var gate = root.querySelector("[data-pd-gate]");
+      var useGate = root.dataset.gate === "1";
+      var expected = root.dataset.code || "";
+      var storeKey = "pd_unlocked_{{ section.id }}";
+
+      function gateLocked() {
+        if (!useGate) return false;
+        try { if (localStorage.getItem(storeKey) === "1") return false; } catch (e) {}
+        return true;
+      }
+
+      function unlock() {
+        try { localStorage.setItem(storeKey, "1"); } catch (e) {}
+        if (gate) gate.classList.add("pd-hidden");
+        apply();
+      }
+
+      if (useGate) {
+        if (!gateLocked()) { if (gate) gate.classList.add("pd-hidden"); }
+        var input = root.querySelector("[data-pd-code-input]");
+        var submit = root.querySelector("[data-pd-code-submit]");
+        var errEl = root.querySelector("[data-pd-code-error]");
+        function tryCode() {
+          var val = (input && input.value ? input.value : "").toLowerCase().trim();
+          if (val && val === expected) { if (errEl) errEl.textContent = ""; unlock(); }
+          else { if (errEl) errEl.textContent = {{ ps.gate_error | json }}; }
+        }
+        if (submit) submit.addEventListener("click", tryCode);
+        if (input) input.addEventListener("keydown", function (e) { if (e.key === "Enter") tryCode(); });
+      }
+
+      apply();
+      setInterval(apply, 1000);
+    })();
+  </script>
+</section>
+
+{% schema %}
+{
+  "name": "Vente privée",
+  "tag": "section",
+  "class": "pd-private-sale-section",
+  "settings": [
+    { "type": "header", "content": "Accès par code (MVP)" },
+    { "type": "paragraph", "content": "Vérification côté navigateur uniquement. Pratique pour tester, mais pas une vraie sécurité (le code est visible dans le code source)." },
+    { "type": "checkbox", "id": "enable_code", "label": "Activer l'accès par code", "default": true },
+    { "type": "text", "id": "access_code", "label": "Code d'accès", "default": "VIP2026" },
+    { "type": "text", "id": "gate_title", "label": "Titre de l'accès", "default": "Accès réservé" },
+    { "type": "text", "id": "gate_subtitle", "label": "Sous-titre de l'accès", "default": "Entrez votre code d'invitation pour découvrir la sélection." },
+    { "type": "text", "id": "gate_placeholder", "label": "Placeholder du champ", "default": "Votre code" },
+    { "type": "text", "id": "gate_button", "label": "Bouton", "default": "Accéder à la vente" },
+    { "type": "text", "id": "gate_error", "label": "Message d'erreur", "default": "Code invalide. Vérifiez votre invitation." },
+
+    { "type": "header", "content": "Dates & compte à rebours" },
+    { "type": "paragraph", "content": "Format conseillé : 2026-07-01T18:00:00+02:00 (date + heure + décalage horaire). Laisser vide = pas de limite." },
+    { "type": "text", "id": "starts_at", "label": "Ouverture (début)", "info": "Avant cette date : message « avant ouverture »." },
+    { "type": "text", "id": "ends_at", "label": "Fermeture (fin)", "info": "Après cette date : message « après fermeture »." },
+    { "type": "checkbox", "id": "show_timer", "label": "Afficher le compte à rebours", "default": true },
+    { "type": "checkbox", "id": "hide_products_after", "label": "Masquer les produits après la fermeture", "default": false },
+    { "type": "text", "id": "label_days", "label": "Libellé jours", "default": "Jours" },
+    { "type": "text", "id": "label_hours", "label": "Libellé heures", "default": "Heures" },
+    { "type": "text", "id": "label_minutes", "label": "Libellé minutes", "default": "Minutes" },
+    { "type": "text", "id": "label_seconds", "label": "Libellé secondes", "default": "Secondes" },
+
+    { "type": "header", "content": "Messages d'état" },
+    { "type": "textarea", "id": "message_before", "label": "Avant ouverture", "default": "La vente privée ouvre bientôt. Préparez votre sélection." },
+    { "type": "textarea", "id": "message_during", "label": "Pendant la vente", "default": "La vente est ouverte. Sélection disponible pour une durée limitée." },
+    { "type": "textarea", "id": "message_after", "label": "Après fermeture", "default": "La vente est terminée. Merci à toutes et tous — rendez-vous pour le prochain drop." },
+
+    { "type": "header", "content": "Hero" },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Vente privée" },
+    { "type": "text", "id": "title", "label": "Titre", "default": "Une sélection réservée." },
+    { "type": "textarea", "id": "subtitle", "label": "Sous-titre", "default": "Accès exclusif à une collection révélée pour une durée limitée." },
+    { "type": "image_picker", "id": "hero_image", "label": "Image hero (optionnelle)" },
+
+    { "type": "header", "content": "Section produits" },
+    { "type": "text", "id": "reserved_title", "label": "Titre de la section", "default": "La sélection" },
+    { "type": "text", "id": "reserved_subtitle", "label": "Sous-titre", "default": "Pièces choisies, en quantités limitées." },
+    { "type": "range", "id": "columns", "label": "Colonnes (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    { "type": "checkbox", "id": "show_price", "label": "Afficher le prix", "default": true },
+    { "type": "checkbox", "id": "enable_add_to_cart", "label": "Activer « Ajouter au panier »", "default": true },
+    { "type": "text", "id": "label_view", "label": "Bouton voir le produit", "default": "Voir le produit" },
+    { "type": "text", "id": "label_add", "label": "Bouton ajouter au panier", "default": "Ajouter au panier" },
+
+    { "type": "header", "content": "Design" },
+    { "type": "color", "id": "bg_color", "label": "Fond", "default": "#FBFBFA" },
+    { "type": "color", "id": "text_color", "label": "Texte", "default": "#0B0B0F" },
+    { "type": "color", "id": "accent_color", "label": "Accent (boutons, timer)", "default": "#0B0B0F" },
+    { "type": "color", "id": "button_text_color", "label": "Texte des boutons", "default": "#FFFFFF" },
+    { "type": "color", "id": "card_color", "label": "Fond des cartes (liquid glass)", "default": "#FFFFFFB3" },
+    { "type": "range", "id": "radius", "label": "Arrondi", "min": 0, "max": 28, "step": 2, "default": 16, "unit": "px" },
+    { "type": "select", "id": "font_family", "label": "Police", "default": "inherit",
+      "options": [
+        { "value": "inherit", "label": "Police du thème" },
+        { "value": "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif", "label": "Système (Apple-like)" }
+      ]
+    },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 20, "max": 140, "step": 4, "default": 72, "unit": "px" },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 20, "max": 140, "step": 4, "default": 88, "unit": "px" }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Produit",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Produit" },
+        { "type": "text", "id": "custom_label", "label": "Badge (ex : Édition limitée)" },
+        { "type": "text", "id": "note", "label": "Note courte (ex : 12 pièces)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vente privée",
+      "blocks": [ { "type": "product" }, { "type": "product" }, { "type": "product" } ]
+    }
+  ]
+}
+{% endschema %}
