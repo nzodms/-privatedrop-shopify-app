@@ -27,7 +27,10 @@ const shopify = shopifyApp({
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   future: {
-    unstable_newEmbeddedAuthStrategy: true,
+    // OAuth classique (redirection) : le plus fiable pour une installation
+    // configurée à la main dans le Partner Dashboard, sans Shopify CLI.
+    // Les scopes demandés viennent de la variable SCOPES.
+    unstable_newEmbeddedAuthStrategy: false,
     removeRest: true,
   },
   hooks: {

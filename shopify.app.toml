@@ -21,12 +21,13 @@ include_config_on_deploy = true
 automatically_update_urls_on_dev = true
 
 [access_scopes]
-# Scopes V1 minimaux — lecture seule.
-# read_products  : sélection produits + snapshots (titre/image/prix/stock).
-# read_customers : règles d'accès VIP (email client, tag, ancien client via numberOfOrders).
-scopes = "read_products,read_customers"
-# Flux d'installation moderne (managed install / token exchange). Pas de token copié/collé.
-use_legacy_install_flow = false
+# Scope réduit au minimum pour valider l'installation en premier.
+# read_products suffit pour le dashboard + futures sélections produit.
+# read_customers (règles VIP) sera ajouté plus tard — il demande l'approbation
+# "Protected customer data" qui peut bloquer/retarder l'install.
+scopes = "read_products"
+# OAuth classique (redirection) plutôt que managed install : config 100 % manuelle.
+use_legacy_install_flow = true
 
 [auth]
 redirect_urls = [

@@ -5,12 +5,16 @@
 App Shopify embarquée (Remix + TypeScript strict + Prisma/PostgreSQL + Polaris/Tailwind).
 Installation via **OAuth officiel Shopify** — jamais de token copié/collé.
 
-Ce dépôt est au **Milestone 1 — Fondation** : OAuth, sessions, base de données,
-webhooks RGPD, splash screen premium et tableau de bord vide fonctionnel dans
-l'admin Shopify, plus la base de l'App Proxy.
+Branche **app embedded simplifiée** : OAuth classique, scope `read_products`,
+splash + dashboard vide avec bouton « Créer une vente privée ». Objectif :
+installer l'app dans Shopify Admin le plus simplement possible.
 
-> 🚀 **Déploiement sans Docker ni local** (GitHub → Vercel → Neon → Shopify) :
-> voir **[VERCEL.md](./VERCEL.md)**. Route de santé : `/health` → `{ ok: true }`.
+> 🚀 **Installation (GitHub → Vercel → Neon → Shopify Admin)** : suivre
+> **[VERCEL.md](./VERCEL.md)** — checklist ultra-simple.
+> Route de santé : `/health` → `{ ok: true }`.
+
+> La section ci-dessous décrit le dev local (Docker/CLI) — **optionnelle**. Pour
+> juste mettre l'app dans ton admin, va directement à `VERCEL.md`.
 
 ---
 

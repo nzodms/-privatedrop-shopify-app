@@ -24,7 +24,6 @@ export default function App() {
         <Link to="/app" rel="home">
           Accueil
         </Link>
-        <Link to="/app/onboarding">Smart Start</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>
