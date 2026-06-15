@@ -12,11 +12,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // URL d'exécution (Neon : connexion *poolée* `-pooler`, recommandée en serverless).
-  url      = env("DATABASE_URL")
-  // URL directe (Neon : connexion *non poolée*) utilisée par `prisma migrate`.
-  // Si tu n'utilises qu'une seule URL, mets la même valeur que DATABASE_URL.
-  directUrl = env("DIRECT_URL")
+  // Une seule URL pour l'exécution ET les migrations.
+  // Sur Neon, utiliser de préférence la connexion *directe* (non poolée) :
+  //   postgresql://USER:PASS@ep-xxxx.REGION.aws.neon.tech/DB?sslmode=require
+  // (la connexion poolée "-pooler" fonctionne aussi pour l'exécution.)
+  url = env("DATABASE_URL")
 }
 
 // ── Sessions Shopify ────────────────────────────────────────────────────────
